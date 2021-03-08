@@ -6,7 +6,7 @@ import mysql.connector
 
 
 #INPUT_PAIRS_TUPLE = ('DOGEUSDT', 'COTIUSDT', 'PERLUSDT', 'AUCTIONBTC', 'TROYUSDT', 'REEFUSDT')
-INPUT_PAIRS_TUPLE = ('DOGEUSDT', 'COTIUSDT')
+INPUT_PAIRS_TUPLE = ('REEFUSDT', 'PERLUSDT')
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO) #, filename='new_screener_test.log'
 logger = logging.getLogger(__name__)
@@ -159,6 +159,11 @@ class ScreenerBinance:
       highs_gen = (x for x in highs_list)
       lows_gen = (y for y in lows_list)
       last_price = open_price
+      #last_dev_prcnt = None
+      start_checks = 0 #test
+      up_checks = 0 #test
+      down_checks = 0 #test
+      entry_point = None
       last_trend = ''
       prev_dev_prcnt = None
       cycles_list = []
@@ -173,40 +178,49 @@ class ScreenerBinance:
           prev_high = highs_list[next_high_index-1]
           prev_low = lows_list[next_low_index-1]
           if not last_trend:
+            start_checks += 1 #test
             last_deviation_high_prcnt = (100*next_low/last_price) - 100
             last_deviation_low_prcnt = 100 - (100*next_high/last_price)
             #last_deviation_prcnt = 100 - (100*next_high/last_price)
             if last_deviation_high_prcnt > self.min_prcnt:
               last_price = next_low
+              entry_point = ['next up', next_high_index]
               last_trend = 'up'
               prev_dev_prcnt = last_deviation_high_prcnt
             elif last_deviation_low_prcnt > self.min_prcnt:
               last_price = next_high
+              entry_point = ['next down', next_high_index]
               last_trend = 'down'
               prev_dev_prcnt = last_deviation_low_prcnt
               #next_prcnt = -1 * last_deviation_low_prcnt
           elif last_trend == 'up':
+            up_checks += 1 #test
             last_price = next_high
             last_deviation_prcnt = (100*next_high/prev_low) - 100
             price_run = last_deviation_prcnt - prev_dev_prcnt
             if price_run > self.min_prcnt:
-              cycles_list.append(last_deviation_prcnt)
-              downtrend_list.append(last_deviation_prcnt)
+              cycles_list.append(price_run)
+              downtrend_list.append(price_run)
               last_trend = 'down'
             else:
               prev_dev_prcnt = last_deviation_prcnt
           elif last_trend == 'down':
+            down_checks += 1 #test
             last_price = next_low
             last_deviation_prcnt = 100 - (100*next_low/prev_high)
             price_run = last_deviation_prcnt - prev_dev_prcnt
             if price_run > self.min_prcnt:
-              cycles_list.append(last_deviation_prcnt)
-              uptrend_list.append(last_deviation_prcnt)
+              cycles_list.append(price_run)
+              uptrend_list.append(price_run)
               last_trend = 'up'
             else:
               prev_dev_prcnt = last_deviation_prcnt
         except:
           last_price = None
+      #print(entry_point, start_checks, up_checks, down_checks)
+      #print(cycles_list)
+      #print(uptrend_list)
+      #print(downtrend_list)
       common_prcnt = sum(cycles_list)
       cycles_len = len(cycles_list)
       avg_common_prcnt = 0.0
@@ -230,6 +244,7 @@ class ScreenerBinance:
       date_from = (datetime.datetime.today() - datetime.timedelta(hours=self.period)).strftime(self.DATE_FORMAT)
       for pair in self.pair_tuple:
         ohlc_lists = self.get_pair_OHLC_list(pair, date_from=date_from)
+        #print(len(ohlc_lists[2]), len(ohlc_lists[3]))
         res_list = self.process_main_algo(ohlc_lists[1][0], ohlc_lists[2], ohlc_lists[3])
         res_list.insert(1, pair)
         res_tuple = tuple(res_list)
@@ -239,6 +254,7 @@ class ScreenerBinance:
 if __name__ == '__main__':
   scr_db = ScreenerDB(MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DATABASE)
   scr_db.MySQL_create_tables(MySQL_TABLES)
+  #screener = ScreenerBinance('DOGEUSDT', '5m', 1)
   start_time = time.time()
   screener = ScreenerBinance(INPUT_PAIRS_TUPLE, 24, 1)
   res = screener.start()
@@ -246,4 +262,3 @@ if __name__ == '__main__':
   end_time = time.time()
   total_time = end_time - start_time
   logger.info('Time total: %f', total_time)
-
