@@ -21,12 +21,12 @@ MySQL_TABLES['screener'] = (
     "  `date` datetime NOT NULL,"
     "  `pair` varchar(30),"
     "  `time_range` varchar(36),"
-    "  `min_prcnt` DECIMAL(3,1) NOT NULL DEFAULT 0.0,"
-    "  `common_prcnt` DECIMAL(3,1) NOT NULL DEFAULT 0.0,"
+    "  `min_prcnt` DECIMAL(10,1) NOT NULL DEFAULT 0.0,"
+    "  `common_prcnt` DECIMAL(10,1) NOT NULL DEFAULT 0.0,"
     "  `num_cycles` int(12) NOT NULL,"
-    "  `avg_cycle_prcnt` DECIMAL(3,1) NOT NULL DEFAULT 0.0,"
-    "  `avg_high_prcnt` DECIMAL(3,1) NOT NULL DEFAULT 0.0,"
-    "  `avg_low_prcnt` DECIMAL(3,1) NOT NULL DEFAULT 0.0,"
+    "  `avg_cycle_prcnt` DECIMAL(10,1) NOT NULL DEFAULT 0.0,"
+    "  `avg_high_prcnt` DECIMAL(10,1) NOT NULL DEFAULT 0.0,"
+    "  `avg_low_prcnt` DECIMAL(10,1) NOT NULL DEFAULT 0.0,"
     "  PRIMARY KEY (`id`)"
     ") ENGINE=InnoDB")
 
